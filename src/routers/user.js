@@ -29,15 +29,10 @@ router.post('/users/login', async (req, res) => {
     }
 })
 
-// fetch multiple users endpoint (R in CRUD) for REST API
+// fetch user profile endpoint (R in CRUD) for REST API
 // 2nd argument is the middleware function to run before route handler
-router.get('/users', auth, async (req, res) => {
-    try {
-        const users = await User.find({});
-        res.send(users);
-    } catch (error) {
-        res.status(500).send();
-    }
+router.get('/users/me', auth, async (req, res) => {
+    res.send(req.user);
 })
 
 // fetch individual user by ID endpoint (R in CRUD) for REST API
