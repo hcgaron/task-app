@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Task = require('./task');
 
 // create a schema for our user model so we can use middleware
 // middleware will allow us to access hooks to do things like hash passwords
@@ -49,6 +50,18 @@ const userSchema = new mongoose.Schema({
       required: true
     }
   }]
+}, {
+  timestamps: true
+})
+
+// setus up a virtual field which allows two separate collections to find a common
+// relationship.  In this case, it will allow users to find all the taks that they
+// own.  This is possible because the userId is stored under the 'owner' property
+// of each task in the tasks collection.
+userSchema.virtual('tasks', {
+  ref: 'Task',
+  localField: '_id', // what property from THIS object should we try to match on the OTHER object 
+  foreignField: 'owner' // what property on the OTHER object can potentially match the local property above
 })
 
 // hide sensitive data from getting sent back to the user (passwords & tokens array)
@@ -62,6 +75,7 @@ userSchema.methods.toJSON = function() {
   return userObject;
 }
 
+// generates authentication token
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
   const token = jwt.sign({ _id: user._id.toString() }, 'thisismynewcourse');
@@ -72,6 +86,7 @@ userSchema.methods.generateAuthToken = async function () {
   return token;
 }
 
+// returns a user attached to the request if the user is authenticated
 userSchema.statics.findByCredentials = async (email, password) => {
   const user = await User.findOne({ email });
 
@@ -97,6 +112,14 @@ userSchema.pre('save', async function (next) {
   }
 
   next() // must be called at the end so we continue our program
+})
+
+// Delete user tasks when user is removed (middleware)
+userSchema.pre('remove', async function(next) {
+  const user = this;
+  await Task.deleteMany({ owner: user._id })
+
+  next();
 })
 
 const User = mongoose.model('User', userSchema)
