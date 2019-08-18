@@ -31,27 +31,3 @@ app.use(taskRouter);
 app.listen(port, () => {
   console.log('Server is up on ' + port);
 });
-
-
-
-
-
-
-
-
-//  *************************** //
-// const bcrypt = require('bcryptjs');
-// const jwt = require('jsonwebtoken');
-
-// const myFunction = async () => {
-//   // create a new JSON web token; returns token
-//   // 2nd argument is a secret to make sure token hasn't been faked or tampered
-//   const token = jwt.sign({ _id: 'abc123'  }, 'thisismynewcourse', { expiresIn: '7 days'});
-//   console.log(token);
-
-//   // verify token
-//   const data = jwt.verify(token, 'thisismynewcourse');
-//   console.log(data);
-// }
-
-// myFunction();

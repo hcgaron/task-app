@@ -22,12 +22,38 @@ router.post('/users/login', async (req, res) => {
         const user = await User.findByCredentials(req.body.email, req.body.password);
         const token = await user.generateAuthToken(); // get JSON web token 
 
-
         res.send({ user, token });
     } catch (error) {
         res.status(400).send();
     }
 })
+
+// user log-out route (will delete authToken)
+router.post('/users/logout', auth, async (req, res) => {
+    try {
+        req.user.tokens = req.user.tokens.filter((token) => {
+            return token.token !== req.token;
+        })
+        await req.user.save();
+
+        res.send();
+    } catch (error) {
+        res.status(500).send();
+    }
+})
+
+// user log-out of ALL sessions (delete ALL authTokens)
+router.post('/users/logoutAll', auth, async (req, res) => {
+    try {
+        req.user.tokens = [];
+        await req.user.save();
+
+        res.send();
+    } catch (error) {
+        res.status(500).send();
+    }
+})
+
 
 // fetch user profile endpoint (R in CRUD) for REST API
 // 2nd argument is the middleware function to run before route handler

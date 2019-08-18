@@ -51,6 +51,17 @@ const userSchema = new mongoose.Schema({
   }]
 })
 
+// hide sensitive data from getting sent back to the user (passwords & tokens array)
+userSchema.methods.toJSON = function() {
+  const user = this;
+  const userObject = user.toObject();
+
+  delete userObject.password;
+  delete userObject.tokens;
+
+  return userObject;
+}
+
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
   const token = jwt.sign({ _id: user._id.toString() }, 'thisismynewcourse');
@@ -60,7 +71,6 @@ userSchema.methods.generateAuthToken = async function () {
 
   return token;
 }
-
 
 userSchema.statics.findByCredentials = async (email, password) => {
   const user = await User.findOne({ email });

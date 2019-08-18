@@ -12,6 +12,7 @@ const auth = async (req, res, next) => {
             throw new Error();
         }
 
+        req.token = token; // saving the token on the request so user can logout later if needed
         req.user = user;
         next();
     } catch (error) {
