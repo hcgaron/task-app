@@ -20,11 +20,31 @@ router.post('/tasks', auth, async (req, res) => {
 
 
 // fetch multiple tasks endpoint (R in CRUD) for REST API
+// limit & skip are used to implement pagination of data
 router.get('/tasks', auth, async (req, res) => {
   try {
-    // const tasks = await Task.find({ owner: req.user._id });
+    const match = {}
+    const sort = {}
 
-    await req.user.populate('tasks').execPopulate();
+    if (req.query.completed) {
+      match.completed = req.query.completed.toLowerCase() === 'true'
+    }
+
+    if (req.query.sortBy) {
+      //  1 is ascending, -1 is descending
+      const parts = req.query.sortBy.split('_');
+      sort[parts[0]] = parts[1] === 'desc' ? -1 : 1;
+    }
+
+    await req.user.populate({
+      path: 'tasks',
+      match,
+      options: {
+        limit: parseInt(req.query.limit), // ignored if limit isn't provided or isn't a number
+        skip: parseInt(req.query.skip),
+        sort
+      }
+    }).execPopulate();
     res.send(req.user.tasks)
   } catch (error) {
     res.status(500).send();
@@ -95,5 +115,8 @@ router.delete('/tasks/:id', auth, async (req, res) => {
     res.status(500).send();
   }
 })
+
+
+
 
 module.exports = router;

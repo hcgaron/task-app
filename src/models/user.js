@@ -49,7 +49,11 @@ const userSchema = new mongoose.Schema({
       type: String,
       required: true
     }
-  }]
+  }],
+  avatar: {
+    type: Buffer // allows us to store binary image (or any file?) data
+                 // alongside the user to which it belongs  
+  }
 }, {
   timestamps: true
 })
@@ -71,6 +75,7 @@ userSchema.methods.toJSON = function() {
 
   delete userObject.password;
   delete userObject.tokens;
+  delete userObject.avatar;
 
   return userObject;
 }
@@ -78,7 +83,7 @@ userSchema.methods.toJSON = function() {
 // generates authentication token
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
-  const token = jwt.sign({ _id: user._id.toString() }, 'thisismynewcourse');
+  const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
   // save token to the user info in the database
   user.tokens = user.tokens.concat({ token });
   await user.save();
